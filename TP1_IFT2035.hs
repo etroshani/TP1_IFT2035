@@ -216,8 +216,23 @@ s2l (Snode (Ssym "λ") [Ssym x, body]) = Labs x (s2l body)
 s2l (Snode (Ssym "λ") [Ssym x, body, arg]) = Lfuncall (Labs x (s2l body)) [s2l arg]
 
 
+----
+--Conditions
+s2l (Snode (Ssym "if") [condition, trueBranch, falseBranch]) =
+    Lite (s2l condition) (s2l trueBranch) (s2l falseBranch)
+--Let expressions with a single variable
+s2l (Snode (Ssym "let") [Snode (Ssym var) [value], body]) =
+    Lfuncall (Labs var (s2l body)) [s2l value]
+--Let expressions with multiple variables
+s2l (Snode (Ssym "let") [(Ssym var, value):rest]) =
+    Lfuncall (Labs var (s2l (Snode (Ssym "let") rest))) [s2l value]
+----
 
 
+
+--Other let expression handler(not necessarily good)
+s2l (Snode (Ssym "let") [Ssym var1, Ssym var2, condition, trueBranch, falseBranch]) =
+    Lite (Lfuncall (Labs var1 (Labs var2 (s2l trueBranch))) [s2l condition]) (s2l trueBranch) (s2l falseBranch)
 
 
 -- ¡¡ COMPLETER !!
