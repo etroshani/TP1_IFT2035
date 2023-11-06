@@ -197,6 +197,40 @@ s2l :: Sexp -> Lexp
 s2l (Snum n) = Llit n
 s2l (Ssym s) = Lid s
 -- ¡¡ COMPLETER !!
+-- opérations arithmétiques (genre + 2 3)
+s2l (Snode (Ssym "+") [Snum n, Snum m]) = Lfuncall (Lid "+")[Llit n, Llit m] -- il suffit de remplacer "+" par les autres pr avoir toutes les opés
+-- détecter une déclaration de fonction anonyme
+s2l (Snode (Ssym "λ")[Snode x, Snode e]) = Labs x (s2l e)
+-- détecter un appel de fonction (on a juste besoin de 2 cas. Voir ci-dessous comment je transforme même les cas où on dirait qu'il faut plus de 2 cas, en des cas de juste 2 cas)
+s2l (Snode e1)[Snode e2] = Lfuncall e1 [s2l e2]
+
+-- explication de pq il faut juste 2 cas pr les appels de fct
+--((λ x x) 2)                             ; ↝ 2
+
+--(((λ x (λ y (* x y)))
+--  3)
+-- 5)                 
+
+-- déclaration : λ x -> e
+-- appel : (λ x -> e) 5
+-- déclaration : λ y -> * x y (le y vient d'un endroit qqconque du code)
+-- appel : (λ y -> * x y) 3
+
+-- construction de "ref-cell"
+s2l (Snode (Ssym "ref!")[Snode e]) = Lmkref(s2l e)
+-- établir ou changer la valeur d'une "ref-cell"
+s2l (Snode (Ssym "set!")[Snode e1, Snode e2]) = Lassign (s2l e1)(s2l e2)
+-- get la valeur d'une "ref-cell"
+s2l (Snode (Ssym "get!")[Snode e]) = Lderef (s2l e)
+-- détecter les expressions du genre "if-then-else"
+s2l (Snode (Ssym "if") [Snode e1, Snode e2, Snode e3]) = Lite (s2l e1)(s2l e2)(s2l e3)
+-- détecter une déclaration locale non récursive (aussi appelée "simple")
+s2l (Snode (Ssym "let")[Snode (Ssym x)[Snode e1, Snode e2]]) = Ldec x (s2l e1)(s2l e2)
+-- détecter une déclaration locale récursive
+-- À FAIRE
+-- détecter une opération booléenne sur les entiers (càd = e1 e2, > e1 1, etc.)
+s2l (Ssym "=")[Snode e1, Snode e2] = Lfuncall (Lid "=")[Lid e1, Lid e2] -- pr les autres types d'opés (>, <, >= etc.), il faut juste remplacer "=" par celles-ci
+
 s2l se = error ("Expression Slip inconnue: " ++ (showSexp se))
 
 ---------------------------------------------------------------------------
