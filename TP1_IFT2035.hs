@@ -252,8 +252,13 @@ hlookup _ p | p < 0 = error "hlookup sur une adresse négative"
 hlookup (Hnode _ e o) p = hlookup (if p `mod` 2 == 0 then e else o) (p `div` 2)
 
 hinsert :: Heap -> Int -> Value -> Heap
-hinsert _ p _ | p < 0 = error "hinsert sur une adresse négative"
--- ¡¡ COMPLETER !!
+hinsert Hempty p v | p == 0 = Hnode (Just v) Hempty Hempty
+hinsert Hempty _ _ = error "hinsert: Address out of bounds"
+
+hinsert (Hnode mv e o) p v
+    | p < 0 = error "hinsert: Address cannot be negative"
+    | p `mod` 2 == 0 = Hnode mv (hinsert e (p `div` 2) v) o
+    | otherwise = Hnode mv e (hinsert o (p `div` 2) v)
 
 -- Représentation de l'environnement --------------------------------------
 
