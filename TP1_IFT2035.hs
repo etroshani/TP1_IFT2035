@@ -1,7 +1,6 @@
 -- TP-2  --- Implantation d'une sorte de Lisp          -*- coding: utf-8 -*-
 {-# OPTIONS_GHC -Wall #-}
 
-
 -- Ce fichier défini les fonctionalités suivantes:
 -- - Analyseur lexical
 -- - Analyseur syntaxique
@@ -28,7 +27,6 @@ data Sexp = Snil                        -- La liste vide
           -- Génère automatiquement un pretty-printer et une fonction de
           -- comparaison structurelle.
           deriving (Show, Eq)
-
 
 -- Exemples:
 -- (+ 2 3) ==> Snode (Ssym "+")
@@ -195,46 +193,9 @@ data Lexp = Llit Int             -- Litéral entier.
 
 -- Conversion de Sexp à Lambda --------------------------------------------
 
---data Sexp = Snil                        -- La liste vide
---        | Ssym String                 -- Un symbole
---        | Snum Int                    -- Un entier
---        | Snode Sexp [Sexp]           -- Une liste non vide
-          -- Génère automatiquement un pretty-printer et une fonction de
-          -- comparaison structurelle.
---        deriving (Show, Eq)
-
-
 s2l :: Sexp -> Lexp
 s2l (Snum n) = Llit n
-s2l (Ssym s) = Lid s 
-
---Addition simple
-s2l (Snode (Ssym "+") args) = Lfuncall (Lid "+") (map s2l args)
---Single λ expression(Ex.: ((λ x x) 2) )
-s2l (Snode (Ssym "λ") [Ssym x, body]) = Labs x (s2l body)
---λ with 2 arguments(Ex.: (λ x (λ y (* x y))))
-s2l (Snode (Ssym "λ") [Ssym x, body, arg]) = Lfuncall (Labs x (s2l body)) [s2l arg]
-
-
-----
---Conditions
-s2l (Snode (Ssym "if") [condition, trueBranch, falseBranch]) =
-    Lite (s2l condition) (s2l trueBranch) (s2l falseBranch)
---Let expressions with a single variable
-s2l (Snode (Ssym "let") [Snode (Ssym var) [value], body]) =
-    Lfuncall (Labs var (s2l body)) [s2l value]
---Let expressions with multiple variables
-s2l (Snode (Ssym "let") [(Ssym var, value):rest]) =
-    Lfuncall (Labs var (s2l (Snode (Ssym "let") rest))) [s2l value]
-----
-
-
-
---Other let expression handler(not necessarily good)
-s2l (Snode (Ssym "let") [Ssym var1, Ssym var2, condition, trueBranch, falseBranch]) =
-    Lite (Lfuncall (Labs var1 (Labs var2 (s2l trueBranch))) [s2l condition]) (s2l trueBranch) (s2l falseBranch)
-
-
+s2l (Ssym s) = Lid s
 -- ¡¡ COMPLETER !!
 s2l se = error ("Expression Slip inconnue: " ++ (showSexp se))
 
